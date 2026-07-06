@@ -2,109 +2,61 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>🏕️ Camping Checklist</title>
-
 <style>
-body{
-    font-family:Arial,sans-serif;
-    max-width:700px;
-    margin:auto;
-    padding:20px;
-    background:#f6f8f4;
-}
-
-h1{
-    text-align:center;
-}
-
-input{
-    width:100%;
-    padding:12px;
-    font-size:16px;
-    margin-bottom:20px;
-}
-
-h2{
-    background:#3f7d3c;
-    color:white;
-    padding:8px;
-    border-radius:8px;
-}
-
-label{
-    display:block;
-    padding:8px;
-    font-size:18px;
-}
-
-.done{
-    text-decoration:line-through;
-    color:gray;
-}
+body{font-family:Arial,sans-serif;background:#f3f7f1;max-width:760px;margin:auto;padding:20px}
+h1{text-align:center;color:#2e6b3a}
+#progress{text-align:center;font-weight:bold}
+#search{width:100%;padding:12px;border-radius:8px;border:1px solid #bbb;margin:15px 0}
+h2{background:#2e6b3a;color:#fff;padding:10px;border-radius:8px}
+label{display:flex;align-items:center;gap:12px;background:#fff;margin:8px 0;padding:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+input[type=checkbox]{width:20px;height:20px}
+.done span{text-decoration:line-through;color:#888}
 </style>
-
 </head>
-
 <body>
-
 <h1>🏕️ Camping Checklist</h1>
+<p id="progress"></p>
+<input id="search" placeholder="🔍 搜索装备...">
 
-<input id="search" placeholder="搜索装备...">
-
-<h2>🏕️ 住宿</h2>
-
-<label><input type="checkbox"> 帐篷</label>
-<label><input type="checkbox"> 天幕</label>
-<label><input type="checkbox"> 地布</label>
-<label><input type="checkbox"> 地钉</label>
-
-<h2>😴 睡眠</h2>
-
-<label><input type="checkbox"> 睡袋</label>
-<label><input type="checkbox"> 充气垫</label>
-<label><input type="checkbox"> 枕头</label>
-
-<h2>🍳 厨房</h2>
-
-<label><input type="checkbox"> 卡式炉</label>
-<label><input type="checkbox"> 气罐</label>
-<label><input type="checkbox"> 锅</label>
-<label><input type="checkbox"> 餐具</label>
+<div id="list"></div>
 
 <script>
-
-const search=document.getElementById("search");
-
-search.addEventListener("input",()=>{
-
-document.querySelectorAll("label").forEach(item=>{
-
-item.style.display=item.innerText.includes(search.value)?"block":"none";
-
-});
-
-});
-
-document.querySelectorAll("input[type=checkbox]").forEach(box=>{
-
-box.addEventListener("change",()=>{
-
-if(box.checked){
-
-box.parentElement.classList.add("done");
-
-}else{
-
-box.parentElement.classList.remove("done");
-
+const data={
+"🏕️ 住宿":["帐篷","天幕","地布","地钉"],
+"😴 睡眠":["睡袋","充气垫","枕头"],
+"💡 照明":["营灯","头灯","备用电池"],
+"🍳 厨房":["卡式炉","瓦斯罐","打火机","锅","碗、盘子","杯子","筷子、勺子、叉子","菜刀","砧板","剪刀","烤夹","烧烤夹","厨房纸","洗碗海绵","洗洁精","垃圾袋","水"],
+"🧴 个人用品":["牙刷","牙膏","防晒霜","卫生纸","湿纸巾","酒精湿巾","驱虫喷雾","止痒药"],
+"🔋 电子设备":["充电宝","相机"]
+};
+const list=document.getElementById("list");
+let idx=0;
+for(const cat in data){
+ const h=document.createElement("h2");h.textContent=cat;list.appendChild(h);
+ data[cat].forEach(item=>{
+   const id="c"+idx++;
+   const label=document.createElement("label");
+   label.innerHTML=`<input id="${id}" type="checkbox"><span>${item}</span>`;
+   const box=label.querySelector("input");
+   const saved=localStorage.getItem(id)==="true";
+   if(saved){box.checked=true;label.classList.add("done");}
+   box.onchange=()=>{localStorage.setItem(id,box.checked);label.classList.toggle("done",box.checked);update();}
+   list.appendChild(label);
+ });
 }
-
-});
-
-});
-
+function update(){
+ const total=document.querySelectorAll('input[type=checkbox]').length;
+ const checked=document.querySelectorAll('input[type=checkbox]:checked').length;
+ document.getElementById('progress').textContent=`已完成 ${checked} / ${total}`;
+}
+update();
+document.getElementById("search").oninput=e=>{
+ const k=e.target.value.trim();
+ document.querySelectorAll("label").forEach(l=>{
+   l.style.display=l.innerText.includes(k)?"flex":"none";
+ });
+}
 </script>
-
-</body>
-</html>
+</body></html>
