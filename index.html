@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>🏕️ Camping Checklist</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 body{font-family:Arial,sans-serif;background:#f3f7f1;max-width:760px;margin:auto;padding:20px}
 h1{text-align:center;color:#2e6b3a}
@@ -15,7 +18,9 @@ input[type=checkbox]{width:20px;height:20px}
 .done span{text-decoration:line-through;color:#888}
 </style>
 </head>
+
 <body>
+
 <h1>🏕️ Camping Checklist</h1>
 <p id="progress"></p>
 <input id="search" placeholder="🔍 搜索装备...">
@@ -23,40 +28,94 @@ input[type=checkbox]{width:20px;height:20px}
 <div id="list"></div>
 
 <script>
-const data={
-"🏕️ 住宿":["帐篷","天幕","地布","地钉"],
-"😴 睡眠":["睡袋","充气垫","枕头"],
-"💡 照明":["营灯","头灯","备用电池"],
-"🍳 厨房":["卡式炉","瓦斯罐","打火机","锅","碗、盘子","杯子","筷子、勺子、叉子","菜刀","砧板","剪刀","烤夹","烧烤夹","厨房纸","洗碗海绵","洗洁精","垃圾袋","水"],
-"🧴 个人用品":["牙刷","牙膏","防晒霜","卫生纸","湿纸巾","酒精湿巾","驱虫喷雾","止痒药"],
-"🔋 电子设备":["充电宝","相机"]
+// 1️⃣ Supabase 连接（已替换你的信息）
+const SUPABASE_URL = "https://yscqeouavzoupwhderld.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzY3Flb3VhdnpvdXB3aGRlcmxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMDc2NTYsImV4cCI6MjA5ODg4MzY1Nn0.k1-Ww_SLjnXM3_4Fn8YR00SCYZNn4jsFF7AsaTTLDqY";
+
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const list = document.getElementById("list");
+
+// 2️⃣ 读取数据
+async function loadData(){
+  const { data, error } = await client
+    .from("checklist")
+    .select("*")
+    .order("id");
+
+  if(error){
+    console.error(error);
+    return;
+  }
+
+  render(data);
+}
+
+// 3️⃣ 渲染
+function render(data){
+  list.innerHTML = "";
+
+  // 按分类分组
+  const grouped = {};
+  data.forEach(item => {
+    if(!grouped[item.category]) grouped[item.category] = [];
+    grouped[item.category].push(item);
+  });
+
+  let total = data.length;
+  let checkedCount = data.filter(i => i.checked).length;
+
+  document.getElementById("progress").textContent =
+    `已完成 ${checkedCount} / ${total}`;
+
+  // 渲染 UI
+  for(const cat in grouped){
+    const h = document.createElement("h2");
+    h.textContent = cat;
+    list.appendChild(h);
+
+    grouped[cat].forEach(row => {
+      const label = document.createElement("label");
+
+      label.innerHTML = `
+        <input type="checkbox" ${row.checked ? "checked" : ""}>
+        <span>${row.item}</span>
+      `;
+
+      const box = label.querySelector("input");
+
+      if(row.checked){
+        label.classList.add("done");
+      }
+
+      box.onchange = async () => {
+        label.classList.toggle("done", box.checked);
+
+        // 4️⃣ 更新数据库（关键）
+        await client
+          .from("checklist")
+          .update({ checked: box.checked })
+          .eq("id", row.id);
+
+        loadData(); // 刷新进度
+      };
+
+      list.appendChild(label);
+    });
+  }
+}
+
+// 5️⃣ 搜索
+document.getElementById("search").oninput = e => {
+  const k = e.target.value.trim().toLowerCase();
+  document.querySelectorAll("label").forEach(l => {
+    l.style.display = l.innerText.toLowerCase().includes(k) ? "flex" : "none";
+  });
 };
-const list=document.getElementById("list");
-let idx=0;
-for(const cat in data){
- const h=document.createElement("h2");h.textContent=cat;list.appendChild(h);
- data[cat].forEach(item=>{
-   const id="c"+idx++;
-   const label=document.createElement("label");
-   label.innerHTML=`<input id="${id}" type="checkbox"><span>${item}</span>`;
-   const box=label.querySelector("input");
-   const saved=localStorage.getItem(id)==="true";
-   if(saved){box.checked=true;label.classList.add("done");}
-   box.onchange=()=>{localStorage.setItem(id,box.checked);label.classList.toggle("done",box.checked);update();}
-   list.appendChild(label);
- });
-}
-function update(){
- const total=document.querySelectorAll('input[type=checkbox]').length;
- const checked=document.querySelectorAll('input[type=checkbox]:checked').length;
- document.getElementById('progress').textContent=`已完成 ${checked} / ${total}`;
-}
-update();
-document.getElementById("search").oninput=e=>{
- const k=e.target.value.trim();
- document.querySelectorAll("label").forEach(l=>{
-   l.style.display=l.innerText.includes(k)?"flex":"none";
- });
-}
+
+// 6️⃣ 初始化
+loadData();
 </script>
-</body></html>
+
+</body>
+</html>
