@@ -1,1 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏕️ Camping Checklist</title>
 
+<style>
+body{
+    font-family:Arial,sans-serif;
+    max-width:700px;
+    margin:auto;
+    padding:20px;
+    background:#f6f8f4;
+}
+
+h1{
+    text-align:center;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    font-size:16px;
+    margin-bottom:20px;
+}
+
+h2{
+    background:#3f7d3c;
+    color:white;
+    padding:8px;
+    border-radius:8px;
+}
+
+label{
+    display:block;
+    padding:8px;
+    font-size:18px;
+}
+
+.done{
+    text-decoration:line-through;
+    color:gray;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>🏕️ Camping Checklist</h1>
+
+<input id="search" placeholder="搜索装备...">
+
+<h2>🏕️ 住宿</h2>
+
+<label><input type="checkbox"> 帐篷</label>
+<label><input type="checkbox"> 天幕</label>
+<label><input type="checkbox"> 地布</label>
+<label><input type="checkbox"> 地钉</label>
+
+<h2>😴 睡眠</h2>
+
+<label><input type="checkbox"> 睡袋</label>
+<label><input type="checkbox"> 充气垫</label>
+<label><input type="checkbox"> 枕头</label>
+
+<h2>🍳 厨房</h2>
+
+<label><input type="checkbox"> 卡式炉</label>
+<label><input type="checkbox"> 气罐</label>
+<label><input type="checkbox"> 锅</label>
+<label><input type="checkbox"> 餐具</label>
+
+<script>
+
+const search=document.getElementById("search");
+
+search.addEventListener("input",()=>{
+
+document.querySelectorAll("label").forEach(item=>{
+
+item.style.display=item.innerText.includes(search.value)?"block":"none";
+
+});
+
+});
+
+document.querySelectorAll("input[type=checkbox]").forEach(box=>{
+
+box.addEventListener("change",()=>{
+
+if(box.checked){
+
+box.parentElement.classList.add("done");
+
+}else{
+
+box.parentElement.classList.remove("done");
+
+}
+
+});
+
+});
+
+</script>
+
+</body>
+</html>
