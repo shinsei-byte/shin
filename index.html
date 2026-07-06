@@ -119,3 +119,19 @@ loadData();
 
 </body>
 </html>
+-- 开启 RLS（如果没开）
+alter table checklist enable row level security;
+
+-- 允许所有人读取
+drop policy if exists "allow select" on checklist;
+create policy "allow select"
+on checklist
+for select
+using (true);
+
+-- 允许更新（checkbox用）
+drop policy if exists "allow update" on checklist;
+create policy "allow update"
+on checklist
+for update
+using (true);
